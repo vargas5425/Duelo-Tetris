@@ -11,6 +11,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import com.example.duelotetris.TetrisConstants
 import com.example.duelotetris.vm.GameViewModel
 import com.example.duelotetris.vm.state.Piece
@@ -27,9 +30,12 @@ fun GameScreen(vm: GameViewModel, onNavigate: (NavScreens) -> Unit) {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(8.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)
+            .windowInsetsPadding(WindowInsets.navigationBars)
     ) {
-        // Información superior
+        // Información superior (Score, Lines, 37)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
@@ -58,35 +64,24 @@ fun GameScreen(vm: GameViewModel, onNavigate: (NavScreens) -> Unit) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Tableros
-        Row(
+        // ===== SOLO TU TABLERO (pantalla completa) =====
+        Column(
             modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Tablero del jugador
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("TU TABLERO", style = MaterialTheme.typography.labelSmall)
-                BoardCanvas(
-                    board = state.myBoard,
-                    piece = state.currentPiece,
-                    modifier = Modifier
-                        .width(200.dp)
-                        .height(400.dp)
-                )
-            }
-
-            // Tablero del oponente
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("OPONENTE", style = MaterialTheme.typography.labelSmall)
-                BoardCanvas(
-                    board = state.opponentBoard,
-                    piece = null,
-                    modifier = Modifier
-                        .width(200.dp)
-                        .height(400.dp)
-                )
-            }
+            Text("TU TABLERO", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(4.dp))
+            BoardCanvas(
+                board = state.myBoard,
+                piece = state.currentPiece,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .background(Color.Black)
+            )
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Siguiente pieza
         Row(
@@ -108,20 +103,24 @@ fun GameScreen(vm: GameViewModel, onNavigate: (NavScreens) -> Unit) {
 
         // Controles
         Row(
-            modifier = Modifier.fillMaxWidth().padding(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .padding(bottom = 16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Button(onClick = { vm.moveLeft() }) { Text("←") }
-            Button(onClick = { vm.moveRight() }) { Text("→") }
-            Button(onClick = { vm.rotatePiece() }) { Text("↻") }
-            Button(onClick = { vm.hardDrop() }) { Text("↓ ↓") }
+            Button(onClick = { vm.moveLeft() }, modifier = Modifier.size(60.dp, 50.dp)) { Text("←") }
+            Button(onClick = { vm.moveRight() }, modifier = Modifier.size(60.dp, 50.dp)) { Text("→") }
+            Button(onClick = { vm.rotatePiece() }, modifier = Modifier.size(60.dp, 50.dp)) { Text("↻") }
+            Button(onClick = { vm.hardDrop() }, modifier = Modifier.size(60.dp, 50.dp)) { Text("↓ ↓") }
         }
     }
 }
 
+// BoardCanvas - Tablero principal
 @Composable
 fun BoardCanvas(board: Array<IntArray>, piece: Piece?, modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier.background(Color.Black)) {
+    Canvas(modifier = modifier) {
         val cellW = size.width / TetrisConstants.BOARD_WIDTH
         val cellH = size.height / TetrisConstants.BOARD_HEIGHT
 
@@ -167,6 +166,7 @@ fun BoardCanvas(board: Array<IntArray>, piece: Piece?, modifier: Modifier = Modi
     }
 }
 
+// SmallBoardCanvas - Vista previa
 @Composable
 fun SmallBoardCanvas(piece: Piece, modifier: Modifier = Modifier) {
     Canvas(modifier = modifier.background(Color.Black)) {

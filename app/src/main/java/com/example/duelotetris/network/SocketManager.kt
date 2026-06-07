@@ -27,7 +27,7 @@ object SocketManager {
                 .setTransports(arrayOf("websocket"))
                 .build()
 
-            socket = IO.socket("http://10.0.2.2:3000", options)
+            socket = IO.socket("http://10.62.219.186:3000", options)
 
             socket?.on(Socket.EVENT_CONNECT) {
                 println("Socket connected")

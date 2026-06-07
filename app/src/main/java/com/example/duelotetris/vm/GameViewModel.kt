@@ -1,5 +1,6 @@
 package com.example.duelotetris.vm
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.duelotetris.PieceType
@@ -38,11 +39,13 @@ class GameViewModel : ViewModel() {
                         )
                     }
                     is SocketManager.SocketEvent.GameStart -> {
+                        println("=== GameStart RECIBIDO en ViewModel ===")
                         _state.value = _state.value.copy(
                             screen = Screen.GAME,
                             gameRunning = true,
                             startTime = currentTimeMillis()
                         )
+                        println("Screen cambiado a: ${_state.value.screen}")
                         startGameLoop()
                     }
                     is SocketManager.SocketEvent.ReceiveAttack -> {
@@ -87,6 +90,8 @@ class GameViewModel : ViewModel() {
     }
 
     private fun startGameLoop() {
+        Log.d("GameViewModel", "=== startGameLoop ===")
+        Log.d("GameViewModel", "Tablero al inicio: ${_state.value.myBoard.contentDeepToString()}")
         spawnNewPiece()
         gameLoopJob = viewModelScope.launch {
             while (_state.value.gameRunning) {
@@ -260,6 +265,7 @@ class GameViewModel : ViewModel() {
     }
 
     private fun spawnNewPiece() {
+        Log.d("GameViewModel", "=== spawnNewPiece llamado ===")
         val piecesShapes = listOf(
             arrayOf(intArrayOf(1, 1, 1, 1)),  // I
             arrayOf(intArrayOf(1, 1), intArrayOf(1, 1)),  // O
