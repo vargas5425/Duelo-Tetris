@@ -6,7 +6,7 @@ import io.socket.client.IO
 import io.socket.client.Socket
 import org.json.JSONObject
 
-object SocketManager {
+class SocketManager {
     private var socket: Socket? = null
 
     private val _events = Channel<SocketEvent>(Channel.UNLIMITED)
@@ -27,7 +27,7 @@ object SocketManager {
                 .setTransports(arrayOf("websocket"))
                 .build()
 
-            socket = IO.socket("http://10.62.219.186:3000", options)
+            socket = IO.socket(NetworkConfig.SERVER_URL, options)
 
             socket?.on(Socket.EVENT_CONNECT) {
                 println("Socket connected")
@@ -79,9 +79,7 @@ object SocketManager {
         }
     }
 
-    fun createRoom() {
-        socket?.emit("create_room")
-    }
+    fun createRoom() { socket?.emit("create_room") }
 
     fun joinRoom(roomId: String) {
         val data = JSONObject()

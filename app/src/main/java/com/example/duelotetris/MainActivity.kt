@@ -9,9 +9,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import com.example.duelotetris.ui.screens.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.duelotetris.ui.screens.NavScreens
+import com.example.duelotetris.ui.screens.GameScreen
+import com.example.duelotetris.ui.screens.MenuScreen
+import com.example.duelotetris.ui.screens.ResultScreen
+import com.example.duelotetris.ui.screens.WaitingScreen
 import com.example.duelotetris.ui.theme.TetrisDuelTheme
 import com.example.duelotetris.vm.GameViewModel
+import com.example.duelotetris.vm.GameViewModelFactory
 import com.example.duelotetris.vm.state.Screen
 
 class MainActivity : ComponentActivity() {
@@ -21,9 +28,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             TetrisDuelTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    TetrisDuelApp(
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    TetrisDuelApp(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
@@ -33,12 +38,15 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun TetrisDuelApp(modifier: Modifier = Modifier) {
     var currentScreen by remember { mutableStateOf(NavScreens.MENU) }
-    val vm = remember { GameViewModel() }
-    val state by vm.state.collectAsState()  // ← IMPORTANTE: Observar el estado
 
-    // ← NUEVO: Observar cambios en state.screen para navegar automáticamente
+    val app = LocalContext.current.applicationContext as DueloTetrisApp
+    val vm: GameViewModel = viewModel(
+        factory = GameViewModelFactory(app.container.gameRepository)
+    )
+
+    val state by vm.state.collectAsState()
+
     LaunchedEffect(state.screen) {
-        println("TetrisDuelApp - screen cambió a: ${state.screen}")
         when (state.screen) {
             Screen.MENU -> currentScreen = NavScreens.MENU
             Screen.WAITING -> currentScreen = NavScreens.WAITING
