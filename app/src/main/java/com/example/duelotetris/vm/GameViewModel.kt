@@ -8,7 +8,7 @@ import com.example.duelotetris.network.SocketManager
 import com.example.duelotetris.repository.GameRepository
 import com.example.duelotetris.vm.state.GameState
 import com.example.duelotetris.vm.state.Piece
-import com.example.duelotetris.vm.state.Screen
+import com.example.duelotetris.ui.screens.NavScreens
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +22,9 @@ class GameViewModel(
 
     private val _state = MutableStateFlow(GameState())
     val state: StateFlow<GameState> = _state.asStateFlow()
+    private val _currentScreen = MutableStateFlow(NavScreens.MENU)
+
+    val currentScreen: StateFlow<NavScreens> = _currentScreen.asStateFlow()
 
     private var roomId = ""
     private var gameLoopJob: kotlinx.coroutines.Job? = null
@@ -34,14 +37,14 @@ class GameViewModel(
                 when (event) {
                     is SocketManager.SocketEvent.RoomCreated -> {
                         roomId = event.roomId
+                        _currentScreen.value = NavScreens.WAITING
                         _state.value = _state.value.copy(
-                            screen = Screen.WAITING,
-                            roomId = event.roomId
-                        )
+                                roomId = event.roomId
+                            )
                     }
                     is SocketManager.SocketEvent.GameStart -> {
+                        _currentScreen.value = NavScreens.GAME
                         _state.value = _state.value.copy(
-                            screen = Screen.GAME,
                             gameRunning = true,
                             startTime = currentTimeMillis(),
                             opponentConnected = true
@@ -54,8 +57,8 @@ class GameViewModel(
                     is SocketManager.SocketEvent.Victory -> {
                         gameLoopJob?.cancel()
                         val duration = (currentTimeMillis() - _state.value.startTime) / 1000
+                        _currentScreen.value = NavScreens.RESULT
                         _state.value = _state.value.copy(
-                            screen = Screen.RESULT,
                             winner = true,
                             gameRunning = false,
                             duration = duration
@@ -65,8 +68,8 @@ class GameViewModel(
                         println("=== OpponentDisconnected ===")
                         gameLoopJob?.cancel()
                         val duration = (currentTimeMillis() - _state.value.startTime) / 1000
+                        _currentScreen.value = NavScreens.RESULT
                         _state.value = _state.value.copy(
-                            screen = Screen.RESULT,
                             opponentLeft = true,
                             opponentConnected = false,
                             gameRunning = false,
@@ -258,8 +261,8 @@ class GameViewModel(
         }
 
         val duration = (currentTimeMillis() - _state.value.startTime) / 1000
+        _currentScreen.value = NavScreens.RESULT
         _state.value = _state.value.copy(
-            screen = Screen.RESULT,
             winner = false,
             duration = duration
         )
@@ -269,6 +272,7 @@ class GameViewModel(
     fun resetAndPlayAgain() {
         gameLoopJob?.cancel()
         roomId = ""
+        _currentScreen.value = NavScreens.MENU
         _state.value = GameState()
     }
 }

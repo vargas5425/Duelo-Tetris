@@ -3,7 +3,6 @@ package com.example.duelotetris.vm.state
 import com.example.duelotetris.PieceType
 
 data class GameState(
-    var screen: Screen = Screen.MENU,
     var roomId: String = "",
     var myBoard: Array<IntArray> = Array(20) { IntArray(10) { 0 } },
     var currentPiece: Piece? = null,
@@ -19,10 +18,6 @@ data class GameState(
     var startTime: Long = 0L,
     var opponentConnected: Boolean = false
 )
-
-enum class Screen {
-    MENU, WAITING, GAME, RESULT
-}
 
 data class Piece(
     val type: PieceType,
