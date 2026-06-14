@@ -88,6 +88,7 @@ class SocketManager {
     }
 
     fun sendAttack(roomId: String, lines: Int) {
+        println("=== sendAttack: roomId=$roomId, lines=$lines ===")
         val data = JSONObject()
         data.put("roomId", roomId)
         data.put("garbageLines", lines)

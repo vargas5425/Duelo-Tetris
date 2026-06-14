@@ -14,12 +14,9 @@ fun MenuScreen(vm: GameViewModel, onNavigate: (NavScreens) -> Unit) {
     var roomIdInput by remember { mutableStateOf("") }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Mostrar error si existe
     LaunchedEffect(state.errorMessage) {
         state.errorMessage?.let { error ->
             snackbarHostState.showSnackbar(error)
-            // Limpiar el error después de mostrarlo (opcional)
-            // vm.clearError()
         }
     }
 

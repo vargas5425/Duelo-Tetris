@@ -37,7 +37,7 @@ fun ResultScreen(vm: GameViewModel, onNavigate: (NavScreens) -> Unit) {
                 Text("Líneas eliminadas: ${state.lines}", style = MaterialTheme.typography.titleMedium)
                 Text("Duración: ${state.duration} segundos", style = MaterialTheme.typography.titleMedium)
                 if (state.specialCounter >= TetrisConstants.SPECIAL_NUMBER) {
-                    Text("🎉 Lograste el 37! 🎉", style = MaterialTheme.typography.titleSmall)
+                    Text("Lograste el 37!", style = MaterialTheme.typography.titleSmall)
                 }
             }
         }

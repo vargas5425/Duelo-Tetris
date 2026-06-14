@@ -26,6 +26,7 @@ class GameViewModel(
 
     private var roomId = ""
     private var gameLoopJob: kotlinx.coroutines.Job? = null
+    private var isGameActive = true
 
     init {
         repository.connect()
@@ -45,7 +46,8 @@ class GameViewModel(
                         _state.value = _state.value.copy(
                             screen = Screen.GAME,
                             gameRunning = true,
-                            startTime = currentTimeMillis()
+                            startTime = currentTimeMillis(),
+                            opponentConnected = true
                         )
                         startGameLoop()
                     }
@@ -53,6 +55,10 @@ class GameViewModel(
                         addGarbageLines(event.lines)
                     }
                     is SocketManager.SocketEvent.Victory -> {
+                        println("=== VICTORY RECIBIDA! El oponente perdió ===")
+                        println("TIMESTAMP: ${currentTimeMillis()}")
+                        isGameActive = false
+                        gameLoopJob?.cancel()
                         val duration = (currentTimeMillis() - _state.value.startTime) / 1000
                         _state.value = _state.value.copy(
                             screen = Screen.RESULT,
@@ -60,17 +66,19 @@ class GameViewModel(
                             gameRunning = false,
                             duration = duration
                         )
-                        gameLoopJob?.cancel()
                     }
                     is SocketManager.SocketEvent.OpponentDisconnected -> {
+                        println("=== OpponentDisconnected ===")
+                        isGameActive = false
+                        gameLoopJob?.cancel()
                         val duration = (currentTimeMillis() - _state.value.startTime) / 1000
                         _state.value = _state.value.copy(
                             screen = Screen.RESULT,
                             opponentLeft = true,
+                            opponentConnected = false,
                             gameRunning = false,
                             duration = duration
                         )
-                        gameLoopJob?.cancel()
                     }
                     is SocketManager.SocketEvent.Error -> {
                         _state.value = _state.value.copy(errorMessage = event.message)
@@ -87,8 +95,9 @@ class GameViewModel(
     private fun startGameLoop() {
         Log.d("GameViewModel", "=== startGameLoop ===")
         spawnNewPiece()
+        isGameActive = true
         gameLoopJob = viewModelScope.launch {
-            while (_state.value.gameRunning) {
+            while (isGameActive && _state.value.gameRunning) {
                 delay(500)
                 movePieceDown()
             }
@@ -102,6 +111,7 @@ class GameViewModel(
         if (!checkCollision(currentPiece.shape, currentPiece.x, newY)) {
             _state.value = _state.value.copy(currentPiece = currentPiece.copy(y = newY))
         } else {
+            println("=== Colisión en movePieceDown - fusionando pieza ===")
             mergePiece()
             checkLines()
             spawnNewPiece()
@@ -193,7 +203,7 @@ class GameViewModel(
                 score = newScore,
                 specialCounter = _state.value.specialCounter + linesCleared
             )
-            val attackLines = when (linesCleared) { 2 -> 1; 3 -> 2; 4 -> 4; else -> 0 }
+            val attackLines = when (linesCleared) { 2 -> 1; 3 -> 2; 4 -> 3; else -> 0}
             if (attackLines > 0 && roomId.isNotEmpty()) repository.sendAttack(roomId, attackLines)
         }
     }
@@ -203,7 +213,7 @@ class GameViewModel(
         repeat(count) {
             for (row in 0 until TetrisConstants.BOARD_HEIGHT - 1)
                 board[row] = board[row + 1].copyOf()
-            val newLine = IntArray(TetrisConstants.BOARD_WIDTH) { 1 }
+            val newLine = IntArray(TetrisConstants.BOARD_WIDTH) { 2 }
             newLine[(0 until TetrisConstants.BOARD_WIDTH).random()] = 0
             board[TetrisConstants.BOARD_HEIGHT - 1] = newLine
         }
@@ -223,25 +233,41 @@ class GameViewModel(
         val pieceTypes = listOf(PieceType.I, PieceType.O, PieceType.T, PieceType.S, PieceType.Z, PieceType.J, PieceType.L)
         val nextPiece = _state.value.nextPiece ?: run {
             val index = (0 until piecesShapes.size).random()
-            Piece(type = pieceTypes[index], shape = piecesShapes[index],
+            val newPiece = Piece(type = pieceTypes[index], shape = piecesShapes[index],
                 x = TetrisConstants.BOARD_WIDTH / 2 - piecesShapes[index][0].size / 2, y = 0)
+            newPiece
         }
         val nextIndex = (0 until piecesShapes.size).random()
         val nextNewPiece = Piece(type = pieceTypes[nextIndex], shape = piecesShapes[nextIndex],
             x = TetrisConstants.BOARD_WIDTH / 2 - piecesShapes[nextIndex][0].size / 2, y = 0)
-        if (checkCollision(nextPiece.shape, nextPiece.x, nextPiece.y)) gameOver()
-        else _state.value = _state.value.copy(currentPiece = nextPiece, nextPiece = nextNewPiece)
+
+        if (checkCollision(nextPiece.shape, nextPiece.x, nextPiece.y)) {
+            gameOver()
+        } else {
+            _state.value = _state.value.copy(currentPiece = nextPiece, nextPiece = nextNewPiece)
+        }
     }
 
     private fun gameOver() {
+        println("=== GAME OVER en este dispositivo ===")
+        println("TIMESTAMP: ${currentTimeMillis()}")
+        isGameActive = false
         _state.value = _state.value.copy(gameRunning = false)
-        if (roomId.isNotEmpty()) repository.gameOver(roomId)
+        if (roomId.isNotEmpty()) {
+            println("=== Enviando game_over al servidor ===")
+            repository.gameOver(roomId)
+        }
         val duration = (currentTimeMillis() - _state.value.startTime) / 1000
-        _state.value = _state.value.copy(screen = Screen.RESULT, winner = false, duration = duration)
+        _state.value = _state.value.copy(
+            screen = Screen.RESULT,
+            winner = false,
+            duration = duration
+        )
         gameLoopJob?.cancel()
     }
 
     fun resetAndPlayAgain() {
+        isGameActive = false
         _state.value = GameState()
         gameLoopJob?.cancel()
     }

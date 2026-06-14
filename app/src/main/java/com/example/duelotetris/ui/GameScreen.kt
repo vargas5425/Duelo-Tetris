@@ -33,9 +33,27 @@ fun GameScreen(vm: GameViewModel, onNavigate: (NavScreens) -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
+            .padding(top = 24.dp)
             .windowInsetsPadding(WindowInsets.navigationBars)
     ) {
-        // Información superior (Score, Lines, 37)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Surface(
+                color = if (state.opponentConnected) Color.Green else Color.Red,
+                shape = MaterialTheme.shapes.small,
+                modifier = Modifier.padding(4.dp)
+            ) {
+                Text(
+                    text = if (state.opponentConnected) "Oponente conectado" else "Oponente desconectado",
+                    color = Color.White,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
@@ -64,7 +82,6 @@ fun GameScreen(vm: GameViewModel, onNavigate: (NavScreens) -> Unit) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // ===== SOLO TU TABLERO (pantalla completa) =====
         Column(
             modifier = Modifier.weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -117,7 +134,7 @@ fun GameScreen(vm: GameViewModel, onNavigate: (NavScreens) -> Unit) {
     }
 }
 
-// BoardCanvas - Tablero principal
+//Tablero principal
 @Composable
 fun BoardCanvas(board: Array<IntArray>, piece: Piece?, modifier: Modifier = Modifier) {
     Canvas(modifier = modifier) {
@@ -126,18 +143,34 @@ fun BoardCanvas(board: Array<IntArray>, piece: Piece?, modifier: Modifier = Modi
 
         for (row in board.indices) {
             for (col in board[row].indices) {
-                if (board[row][col] != 0) {
-                    drawRect(
-                        color = Color(0xFF00FF00),
-                        topLeft = Offset(col * cellW, row * cellH),
-                        size = Size(cellW, cellH)
-                    )
-                    drawRect(
-                        color = Color.Black,
-                        topLeft = Offset(col * cellW, row * cellH),
-                        size = Size(cellW, cellH),
-                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1f)
-                    )
+                val value = board[row][col]
+                when {
+                    value == 1 -> {
+                        drawRect(
+                            color = Color(0xFF00FF00),
+                            topLeft = Offset(col * cellW, row * cellH),
+                            size = Size(cellW, cellH)
+                        )
+                        drawRect(
+                            color = Color.Black,
+                            topLeft = Offset(col * cellW, row * cellH),
+                            size = Size(cellW, cellH),
+                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1f)
+                        )
+                    }
+                    value == 2 -> {
+                        drawRect(
+                            color = Color.Gray,
+                            topLeft = Offset(col * cellW, row * cellH),
+                            size = Size(cellW, cellH)
+                        )
+                        drawRect(
+                            color = Color.Black,
+                            topLeft = Offset(col * cellW, row * cellH),
+                            size = Size(cellW, cellH),
+                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1f)
+                        )
+                    }
                 }
             }
         }
@@ -166,7 +199,7 @@ fun BoardCanvas(board: Array<IntArray>, piece: Piece?, modifier: Modifier = Modi
     }
 }
 
-// SmallBoardCanvas - Vista previa
+// Vista previa
 @Composable
 fun SmallBoardCanvas(piece: Piece, modifier: Modifier = Modifier) {
     Canvas(modifier = modifier.background(Color.Black)) {

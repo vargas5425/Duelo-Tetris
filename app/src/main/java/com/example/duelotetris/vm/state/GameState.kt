@@ -17,7 +17,8 @@ data class GameState(
     var errorMessage: String? = null,
     var specialCounter: Int = 0,
     var duration: Long = 0L,
-    var startTime: Long = 0L
+    var startTime: Long = 0L,
+    var opponentConnected: Boolean = false
 )
 
 enum class Screen {

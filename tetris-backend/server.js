@@ -36,27 +36,47 @@ io.on("connection", (socket) => {
         }
         room.players.push(socket.id);
         socket.join(roomId);
+
+        console.log(`Jugador ${socket.id} unido a ${roomId}`);
         io.to(roomId).emit("game_start");
-        console.log(`Jugador unido a ${roomId}`);
     });
 
     socket.on("send_attack", ({ roomId, garbageLines }) => {
-        console.log(`Ataque: ${garbageLines} lineas -> sala ${roomId}`);
         socket.to(roomId).emit("receive_attack", { garbageLines });
     });
 
     socket.on("game_over", ({ roomId }) => {
-        console.log(`Game over en sala ${roomId}`);
-        socket.to(roomId).emit("victory");
+        console.log(`=== GAME OVER en sala ${roomId} ===`);
+
+        const room = rooms[roomId];
+        if (room) {
+
+            const otherPlayer = room.players.find(id => id !== socket.id);
+            console.log(`Enviando victory a: ${otherPlayer}`);
+
+            // victory
+            io.to(otherPlayer).emit("victory");
+
+            // Eliminar la sala
+            delete rooms[roomId];
+            console.log(`Sala ${roomId} eliminada`);
+        } else {
+            console.log(`ERROR: Sala ${roomId} no encontrada`);
+        }
     });
 
     socket.on("disconnect", () => {
+        console.log("Desconectado:", socket.id);
+
         for (const roomId in rooms) {
             const room = rooms[roomId];
             if (room.players.includes(socket.id)) {
-                socket.to(roomId).emit("opponent_disconnected");
+                const otherPlayer = room.players.find(id => id !== socket.id);
+                if (otherPlayer) {
+                    io.to(otherPlayer).emit("opponent_disconnected");
+                }
                 delete rooms[roomId];
-                console.log(`Desconectado: ${socket.id}, sala ${roomId} eliminada`);
+                console.log(`Sala ${roomId} eliminada por desconexión`);
             }
         }
     });
