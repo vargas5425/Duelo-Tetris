@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.dp
 import com.example.duelotetris.vm.GameViewModel
 
 @Composable
-fun MenuScreen(vm: GameViewModel, onNavigate: (NavScreens) -> Unit) {
+fun MenuScreen(vm: GameViewModel) {
     val state by vm.state.collectAsState()
     var roomIdInput by remember { mutableStateOf("") }
     val snackbarHostState = remember { SnackbarHostState() }

@@ -10,7 +10,7 @@ import com.example.duelotetris.TetrisConstants
 import com.example.duelotetris.vm.GameViewModel
 
 @Composable
-fun ResultScreen(vm: GameViewModel, onNavigate: (NavScreens) -> Unit) {
+fun ResultScreen(vm: GameViewModel) {
     val state by vm.state.collectAsState()
 
     Column(
@@ -45,7 +45,7 @@ fun ResultScreen(vm: GameViewModel, onNavigate: (NavScreens) -> Unit) {
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(
-            onClick = { vm.resetAndPlayAgain(); onNavigate(NavScreens.MENU) },
+            onClick = { vm.resetAndPlayAgain() },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Volver al Menú")

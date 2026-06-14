@@ -7,20 +7,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.duelotetris.vm.GameViewModel
-import com.example.duelotetris.vm.state.Screen
 
 @Composable
-fun WaitingScreen(vm: GameViewModel, onNavigate: (NavScreens) -> Unit) {
+fun WaitingScreen(vm: GameViewModel) {
     val state by vm.state.collectAsState()
-
-    LaunchedEffect(state.screen) {
-        if (state.screen == Screen.GAME) {
-            onNavigate(NavScreens.GAME)
-        }
-        if (state.screen == Screen.MENU) {
-            onNavigate(NavScreens.MENU)
-        }
-    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -33,7 +23,7 @@ fun WaitingScreen(vm: GameViewModel, onNavigate: (NavScreens) -> Unit) {
         Spacer(modifier = Modifier.height(8.dp))
         Text("Código de sala: ${state.roomId}", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(32.dp))
-        Button(onClick = { vm.resetAndPlayAgain(); onNavigate(NavScreens.MENU) }) {
+        Button(onClick = { vm.resetAndPlayAgain() }) {
             Text("Cancelar")
         }
     }

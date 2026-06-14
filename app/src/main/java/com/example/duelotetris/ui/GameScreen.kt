@@ -17,17 +17,10 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import com.example.duelotetris.TetrisConstants
 import com.example.duelotetris.vm.GameViewModel
 import com.example.duelotetris.vm.state.Piece
-import com.example.duelotetris.vm.state.Screen
 
 @Composable
-fun GameScreen(vm: GameViewModel, onNavigate: (NavScreens) -> Unit) {
+fun GameScreen(vm: GameViewModel) {
     val state by vm.state.collectAsState()
-
-    LaunchedEffect(state.screen) {
-        if (state.screen == Screen.RESULT) {
-            onNavigate(NavScreens.RESULT)
-        }
-    }
 
     Column(
         modifier = Modifier
@@ -46,7 +39,7 @@ fun GameScreen(vm: GameViewModel, onNavigate: (NavScreens) -> Unit) {
                 modifier = Modifier.padding(4.dp)
             ) {
                 Text(
-                    text = if (state.opponentConnected) "Oponente conectado" else "Oponente desconectado",
+                    text = if (state.opponentConnected) "● Oponente conectado" else "● Oponente desconectado",
                     color = Color.White,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                     style = MaterialTheme.typography.bodySmall
@@ -100,7 +93,6 @@ fun GameScreen(vm: GameViewModel, onNavigate: (NavScreens) -> Unit) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Siguiente pieza
         Row(
             modifier = Modifier.fillMaxWidth().padding(8.dp),
             horizontalArrangement = Arrangement.Center
@@ -118,7 +110,6 @@ fun GameScreen(vm: GameViewModel, onNavigate: (NavScreens) -> Unit) {
             }
         }
 
-        // Controles
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -134,7 +125,6 @@ fun GameScreen(vm: GameViewModel, onNavigate: (NavScreens) -> Unit) {
     }
 }
 
-//Tablero principal
 @Composable
 fun BoardCanvas(board: Array<IntArray>, piece: Piece?, modifier: Modifier = Modifier) {
     Canvas(modifier = modifier) {
@@ -199,7 +189,6 @@ fun BoardCanvas(board: Array<IntArray>, piece: Piece?, modifier: Modifier = Modi
     }
 }
 
-// Vista previa
 @Composable
 fun SmallBoardCanvas(piece: Piece, modifier: Modifier = Modifier) {
     Canvas(modifier = modifier.background(Color.Black)) {

@@ -268,6 +268,7 @@ class GameViewModel(
 
     fun resetAndPlayAgain() {
         gameLoopJob?.cancel()
+        roomId = ""
         _state.value = GameState()
     }
 }

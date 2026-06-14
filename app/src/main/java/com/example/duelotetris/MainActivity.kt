@@ -37,14 +37,17 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun TetrisDuelApp(modifier: Modifier = Modifier) {
+    //variable de estado que redibuja cuando algo cambia
     var currentScreen by remember { mutableStateOf(NavScreens.MENU) }
 
+    //obtiene el contexto actual y castea a DueloTetrisApp para acceder al contenedor
     val app = LocalContext.current.applicationContext as DueloTetrisApp
+    //crea una instancia de GameViewModel
     val vm: GameViewModel = viewModel(
-        factory = GameViewModelFactory(app.container.gameRepository)
+        factory = GameViewModelFactory(app.container.gameRepository)//usa factory porque ViewModel tiene parametros
     )
 
-    val state by vm.state.collectAsState()
+    val state by vm.state.collectAsState()//escucha los cambios del stateFlow
 
     LaunchedEffect(state.screen) {
         when (state.screen) {
@@ -56,9 +59,9 @@ fun TetrisDuelApp(modifier: Modifier = Modifier) {
     }
 
     when (currentScreen) {
-        NavScreens.MENU -> MenuScreen(vm) { currentScreen = it }
-        NavScreens.WAITING -> WaitingScreen(vm) { currentScreen = it }
-        NavScreens.GAME -> GameScreen(vm) { currentScreen = it }
-        NavScreens.RESULT -> ResultScreen(vm) { currentScreen = it }
+        NavScreens.MENU -> MenuScreen(vm)
+        NavScreens.WAITING -> WaitingScreen(vm)
+        NavScreens.GAME -> GameScreen(vm)
+        NavScreens.RESULT -> ResultScreen(vm)
     }
 }
