@@ -6,7 +6,6 @@ data class GameState(
     var screen: Screen = Screen.MENU,
     var roomId: String = "",
     var myBoard: Array<IntArray> = Array(20) { IntArray(10) { 0 } },
-    var opponentBoard: Array<IntArray> = Array(20) { IntArray(10) { 0 } },
     var currentPiece: Piece? = null,
     var nextPiece: Piece? = null,
     var score: Int = 0,

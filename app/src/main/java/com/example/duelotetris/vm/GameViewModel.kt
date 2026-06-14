@@ -1,6 +1,5 @@
 package com.example.duelotetris.vm
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.duelotetris.PieceType
@@ -26,7 +25,6 @@ class GameViewModel(
 
     private var roomId = ""
     private var gameLoopJob: kotlinx.coroutines.Job? = null
-    private var isGameActive = true
 
     init {
         repository.connect()
@@ -42,7 +40,6 @@ class GameViewModel(
                         )
                     }
                     is SocketManager.SocketEvent.GameStart -> {
-                        println("=== GameStart RECIBIDO en ViewModel ===")
                         _state.value = _state.value.copy(
                             screen = Screen.GAME,
                             gameRunning = true,
@@ -55,9 +52,6 @@ class GameViewModel(
                         addGarbageLines(event.lines)
                     }
                     is SocketManager.SocketEvent.Victory -> {
-                        println("=== VICTORY RECIBIDA! El oponente perdió ===")
-                        println("TIMESTAMP: ${currentTimeMillis()}")
-                        isGameActive = false
                         gameLoopJob?.cancel()
                         val duration = (currentTimeMillis() - _state.value.startTime) / 1000
                         _state.value = _state.value.copy(
@@ -69,7 +63,6 @@ class GameViewModel(
                     }
                     is SocketManager.SocketEvent.OpponentDisconnected -> {
                         println("=== OpponentDisconnected ===")
-                        isGameActive = false
                         gameLoopJob?.cancel()
                         val duration = (currentTimeMillis() - _state.value.startTime) / 1000
                         _state.value = _state.value.copy(
@@ -93,11 +86,10 @@ class GameViewModel(
     fun joinRoom(roomId: String) { repository.joinRoom(roomId) }
 
     private fun startGameLoop() {
-        Log.d("GameViewModel", "=== startGameLoop ===")
         spawnNewPiece()
-        isGameActive = true
+
         gameLoopJob = viewModelScope.launch {
-            while (isGameActive && _state.value.gameRunning) {
+            while (_state.value.gameRunning) {
                 delay(500)
                 movePieceDown()
             }
@@ -111,7 +103,6 @@ class GameViewModel(
         if (!checkCollision(currentPiece.shape, currentPiece.x, newY)) {
             _state.value = _state.value.copy(currentPiece = currentPiece.copy(y = newY))
         } else {
-            println("=== Colisión en movePieceDown - fusionando pieza ===")
             mergePiece()
             checkLines()
             spawnNewPiece()
@@ -231,15 +222,25 @@ class GameViewModel(
             arrayOf(intArrayOf(0, 0, 1), intArrayOf(1, 1, 1))
         )
         val pieceTypes = listOf(PieceType.I, PieceType.O, PieceType.T, PieceType.S, PieceType.Z, PieceType.J, PieceType.L)
+
         val nextPiece = _state.value.nextPiece ?: run {
             val index = (0 until piecesShapes.size).random()
-            val newPiece = Piece(type = pieceTypes[index], shape = piecesShapes[index],
-                x = TetrisConstants.BOARD_WIDTH / 2 - piecesShapes[index][0].size / 2, y = 0)
+            val newPiece = Piece(
+                type = pieceTypes[index],
+                shape = piecesShapes[index],
+                x = TetrisConstants.BOARD_WIDTH / 2 - piecesShapes[index][0].size / 2,
+                y = 0
+            )
             newPiece
         }
+
         val nextIndex = (0 until piecesShapes.size).random()
-        val nextNewPiece = Piece(type = pieceTypes[nextIndex], shape = piecesShapes[nextIndex],
-            x = TetrisConstants.BOARD_WIDTH / 2 - piecesShapes[nextIndex][0].size / 2, y = 0)
+        val nextNewPiece = Piece(
+            type = pieceTypes[nextIndex],
+            shape = piecesShapes[nextIndex],
+            x = TetrisConstants.BOARD_WIDTH / 2 - piecesShapes[nextIndex][0].size / 2,
+            y = 0
+        )
 
         if (checkCollision(nextPiece.shape, nextPiece.x, nextPiece.y)) {
             gameOver()
@@ -249,14 +250,13 @@ class GameViewModel(
     }
 
     private fun gameOver() {
-        println("=== GAME OVER en este dispositivo ===")
-        println("TIMESTAMP: ${currentTimeMillis()}")
-        isGameActive = false
+
         _state.value = _state.value.copy(gameRunning = false)
+
         if (roomId.isNotEmpty()) {
-            println("=== Enviando game_over al servidor ===")
             repository.gameOver(roomId)
         }
+
         val duration = (currentTimeMillis() - _state.value.startTime) / 1000
         _state.value = _state.value.copy(
             screen = Screen.RESULT,
@@ -267,8 +267,7 @@ class GameViewModel(
     }
 
     fun resetAndPlayAgain() {
-        isGameActive = false
-        _state.value = GameState()
         gameLoopJob?.cancel()
+        _state.value = GameState()
     }
 }
