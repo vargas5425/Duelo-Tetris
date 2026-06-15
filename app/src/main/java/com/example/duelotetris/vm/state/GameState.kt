@@ -1,10 +1,12 @@
 package com.example.duelotetris.vm.state
 
 import com.example.duelotetris.PieceType
+import com.example.duelotetris.TetrisConstants
+
 
 data class GameState(
     var roomId: String = "",
-    var myBoard: Array<IntArray> = Array(20) { IntArray(10) { 0 } },
+    var myBoard: Array<IntArray> = Array(TetrisConstants.BOARD_HEIGHT) { IntArray(TetrisConstants.BOARD_WIDTH)},
     var currentPiece: Piece? = null,
     var nextPiece: Piece? = null,
     var score: Int = 0,
